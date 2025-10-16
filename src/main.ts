@@ -1,6 +1,5 @@
 import "./style.css";
 
-
 // Creating the title
 const title = document.createElement("h1");
 title.textContent = "D2 Canvas";
