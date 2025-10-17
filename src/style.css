@@ -1,5 +1,11 @@
-.icon {
-  width: 64px;
-  vertical-align: top;
-  border: 1px solid salmon;
+h1 {
+  text-align: center;
+}
+
+#game-canvas {
+  display: block;
+  margin: 0 auto;
+  border: dotted;
+  border-width: 2px 4px;
+  border-radius: 40px;
 }
