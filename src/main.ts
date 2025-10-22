@@ -18,35 +18,59 @@ const clearButton = document.createElement("button");
 clearButton.innerHTML = "clear";
 document.body.appendChild(clearButton);
 
-//
-clearButton.addEventListener("click", () => {
-  if (ctx) {
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-  }
-});
+// create a custom type for the arrays
+interface Point {
+  x: number;
+  y: number;
+}
+
+// Arrays to store points
+const drawingPoints: Point[][] = [];
+let currentDisplay: Point[] = [];
 
 // Draw
 const cursor = { active: false, x: 0, y: 0 };
 
+// Create a new path
 canvas.addEventListener("mousedown", (e) => {
   cursor.active = true;
-  cursor.x = e.offsetX;
-  cursor.y = e.offsetY;
+  currentDisplay = [{ x: e.offsetX, y: e.offsetY }];
+  drawingPoints.push(currentDisplay);
 });
 
+// Add points to the current display
 canvas.addEventListener("mousemove", (e) => {
-  if (cursor.active) {
-    if (ctx) {
-      ctx.beginPath();
-      ctx.moveTo(cursor.x, cursor.y);
-      ctx.lineTo(e.offsetX, e.offsetY);
-      ctx.stroke();
-    }
-    cursor.x = e.offsetX;
-    cursor.y = e.offsetY;
-  }
+  if (!cursor.active) return;
+  currentDisplay.push({ x: e.offsetX, y: e.offsetY });
+  canvas.dispatchEvent(new Event("dirty"));
 });
 
+// Drawing has stopped
 canvas.addEventListener("mouseup", () => {
   cursor.active = false;
+});
+
+// Redraw the canvas if made dirty
+canvas.addEventListener("dirty", () => {
+  if (!ctx) return;
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+  ctx.beginPath();
+  for (const path of drawingPoints) {
+    for (let i = 1; i < path.length; i++) {
+      const prev = path[i - 1];
+      const curr = path[i];
+      ctx.moveTo(prev.x, prev.y);
+      ctx.lineTo(curr.x, curr.y);
+    }
+  }
+  ctx.stroke();
+});
+
+// Click Logic
+clearButton.addEventListener("click", () => {
+  drawingPoints.length = 0;
+  if (ctx) {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+  }
 });
