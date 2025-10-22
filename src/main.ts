@@ -13,10 +13,24 @@ canvas.id = "game-canvas";
 const ctx = canvas.getContext("2d");
 document.body.appendChild(canvas);
 
-// Creating a clear button
+// Creating the buttons
 const clearButton = document.createElement("button");
 clearButton.innerHTML = "clear";
-document.body.appendChild(clearButton);
+
+const undoButton = document.createElement("button");
+undoButton.innerHTML = "undo";
+
+const redoButton = document.createElement("button");
+redoButton.innerHTML = "redo";
+
+// Centering
+const buttonContainer = document.createElement("div");
+buttonContainer.className = "button-container";
+buttonContainer.appendChild(clearButton);
+buttonContainer.appendChild(undoButton);
+buttonContainer.appendChild(redoButton);
+
+document.body.appendChild(buttonContainer);
 
 // create a custom type for the arrays
 interface Point {
@@ -27,6 +41,7 @@ interface Point {
 // Arrays to store points
 const drawingPoints: Point[][] = [];
 let currentDisplay: Point[] = [];
+//let redoPoints: Point[][] = [];
 
 // Draw
 const cursor = { active: false, x: 0, y: 0 };
@@ -36,6 +51,7 @@ canvas.addEventListener("mousedown", (e) => {
   cursor.active = true;
   currentDisplay = [{ x: e.offsetX, y: e.offsetY }];
   drawingPoints.push(currentDisplay);
+  //redoPoints.length = 0; // clear redo stack when starting a new path
 });
 
 // Add points to the current display
