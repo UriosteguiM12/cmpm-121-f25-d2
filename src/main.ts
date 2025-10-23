@@ -41,7 +41,7 @@ interface Point {
 // Arrays to store points
 const drawingPoints: Point[][] = [];
 let currentDisplay: Point[] = [];
-//let redoPoints: Point[][] = [];
+const redoPoints: Point[][] = [];
 
 // Draw
 const cursor = { active: false, x: 0, y: 0 };
@@ -51,7 +51,7 @@ canvas.addEventListener("mousedown", (e) => {
   cursor.active = true;
   currentDisplay = [{ x: e.offsetX, y: e.offsetY }];
   drawingPoints.push(currentDisplay);
-  //redoPoints.length = 0; // clear redo stack when starting a new path
+  redoPoints.length = 0; // clear redoPoints when starting a new path
 });
 
 // Add points to the current display
@@ -89,4 +89,22 @@ clearButton.addEventListener("click", () => {
   if (ctx) {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
   }
+});
+
+undoButton.addEventListener("click", () => {
+  if (drawingPoints.length === 0) return;
+
+  const newPoints = drawingPoints.pop();
+  if (newPoints) redoPoints.push(newPoints);
+
+  canvas.dispatchEvent(new Event("dirty"));
+});
+
+redoButton.addEventListener("click", () => {
+  if (redoPoints.length === 0) return;
+
+  const oldPoints = redoPoints.pop();
+  if (oldPoints) drawingPoints.push(oldPoints);
+
+  canvas.dispatchEvent(new Event("dirty"));
 });
