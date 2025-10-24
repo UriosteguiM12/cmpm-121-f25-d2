@@ -80,7 +80,6 @@ let currentLine: LineCommand | null = null;
 
 const cursor = { active: false, x: 0, y: 0 };
 
-
 // start a new line on mouse down
 canvas.addEventListener("mousedown", (e) => {
   cursor.active = true;
