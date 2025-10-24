@@ -84,6 +84,29 @@ class LineCommand implements Drawable {
   }
 }
 
+class _ToolPreview implements Drawable {
+  x: number;
+  y: number;
+  thickness: number;
+
+  constructor(x: number, y: number, thickness: number) {
+    this.x = x;
+    this.y = y;
+    this.thickness = thickness;
+  }
+
+  draw(ctx: CanvasRenderingContext2D) {
+    ctx.beginPath();
+    ctx.arc(this.x, this.y, this.thickness / 2, 0, Math.PI * 2);
+    ctx.strokeStyle = "gray";
+    ctx.stroke();
+  }
+
+  display(ctx: CanvasRenderingContext2D) {
+    this.draw(ctx);
+  }
+}
+
 // display list stores all current lines
 const displayList: Drawable[] = [];
 // redo list stores lines that were undone
