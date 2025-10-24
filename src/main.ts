@@ -40,7 +40,7 @@ buttonContainer.appendChild(thickButton);
 
 document.body.appendChild(buttonContainer);
 
-let currentThickness = 2;
+//const currentThickness = 2;
 
 // create a custom type for the arrays
 interface Point {
