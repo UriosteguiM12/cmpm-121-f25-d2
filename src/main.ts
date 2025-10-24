@@ -38,6 +38,11 @@ interface Point {
   y: number;
 }
 
+// add an interface for drawable objects
+interface Drawable {
+  display(ctx: CanvasRenderingContext2D): void;
+}
+
 // Arrays to store points
 const drawingPoints: Point[][] = [];
 let currentDisplay: Point[] = [];
