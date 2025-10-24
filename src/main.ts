@@ -84,7 +84,7 @@ class LineCommand implements Drawable {
   }
 }
 
-class _ToolPreview implements Drawable {
+class ToolPreview implements Drawable {
   x: number;
   y: number;
   thickness: number;
@@ -114,6 +114,8 @@ const redoList: Drawable[] = [];
 // currentLine is the line being actively drawn (null if not drawing)
 let currentLine: LineCommand | null = null;
 
+let _currentPreview: ToolPreview | null = null;
+
 const cursor = { active: false, x: 0, y: 0 };
 
 // start a new line on mouse down
@@ -127,7 +129,11 @@ canvas.addEventListener("mousedown", (e) => {
 
 // extend the current line as the mouse moves
 canvas.addEventListener("mousemove", (e) => {
-  if (!cursor.active || !currentLine) return;
+  if (!cursor.active) {
+    // only show preview when not drawing
+    _currentPreview = new ToolPreview(e.offsetX, e.offsetY, currentThickness);
+  }
+  if (!currentLine) return;
   currentLine.drag(e.offsetX, e.offsetY);
   canvas.dispatchEvent(new Event("dirty")); // trigger redraw
 });
