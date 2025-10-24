@@ -40,7 +40,7 @@ buttonContainer.appendChild(thickButton);
 
 document.body.appendChild(buttonContainer);
 
-let currentThickness = 2;
+let _currentThickness = 2;
 
 // create a custom type for the arrays
 interface Point {
@@ -147,13 +147,13 @@ redoButton.addEventListener("click", () => {
 
 // thickness
 thinButton.addEventListener("click", () => {
-  currentThickness = 2;
+  _currentThickness = 2;
   thinButton.classList.add("selectedTool");
   thickButton.classList.remove("selectedTool");
 });
 
 thickButton.addEventListener("click", () => {
-  currentThickness = 6;
+  _currentThickness = 6;
   thickButton.classList.add("selectedTool");
   thinButton.classList.remove("selectedTool");
 });
