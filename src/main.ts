@@ -23,14 +23,24 @@ undoButton.innerHTML = "undo";
 const redoButton = document.createElement("button");
 redoButton.innerHTML = "redo";
 
+const thinButton = document.createElement("button");
+thinButton.textContent = "thin";
+
+const thickButton = document.createElement("button");
+thickButton.textContent = "thick";
+
 // Centering
 const buttonContainer = document.createElement("div");
 buttonContainer.className = "button-container";
 buttonContainer.appendChild(clearButton);
 buttonContainer.appendChild(undoButton);
 buttonContainer.appendChild(redoButton);
+buttonContainer.appendChild(thinButton);
+buttonContainer.appendChild(thickButton);
 
 document.body.appendChild(buttonContainer);
+
+let currentThickness = 2;
 
 // create a custom type for the arrays
 interface Point {
