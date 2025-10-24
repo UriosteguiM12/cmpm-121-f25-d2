@@ -114,42 +114,70 @@ const redoList: Drawable[] = [];
 // currentLine is the line being actively drawn (null if not drawing)
 let currentLine: LineCommand | null = null;
 
-let _currentPreview: ToolPreview | null = null;
+let currentPreview: ToolPreview | null = null;
 
 const cursor = { active: false, x: 0, y: 0 };
 
 // start a new line on mouse down
 canvas.addEventListener("mousedown", (e) => {
   cursor.active = true;
+  currentPreview = null; // hide preview while drawing
+
   const start: Point = { x: e.offsetX, y: e.offsetY };
   currentLine = new LineCommand(start, currentThickness);
-  displayList.push(currentLine); // add to display list
-  redoList.length = 0; // clear redo history
+  displayList.push(currentLine);
+  redoList.length = 0;
 });
 
-// extend the current line as the mouse moves
 canvas.addEventListener("mousemove", (e) => {
-  if (!cursor.active) {
-    // only show preview when not drawing
-    _currentPreview = new ToolPreview(e.offsetX, e.offsetY, currentThickness);
+  if (cursor.active && currentLine) {
+    currentLine.drag(e.offsetX, e.offsetY);
+  } else {
+    // update preview
+    currentPreview = new ToolPreview(e.offsetX, e.offsetY, currentThickness);
+
+    // fire tool-moved event
+    const toolMovedEvent = new CustomEvent("tool-moved", {
+      detail: { x: e.offsetX, y: e.offsetY, thickness: currentThickness },
+    });
+    canvas.dispatchEvent(toolMovedEvent);
   }
-  if (!currentLine) return;
-  currentLine.drag(e.offsetX, e.offsetY);
-  canvas.dispatchEvent(new Event("dirty")); // trigger redraw
+
+  canvas.dispatchEvent(new Event("dirty")); // redraw
 });
 
-// stop drawing when mouse is released
 canvas.addEventListener("mouseup", () => {
   cursor.active = false;
   currentLine = null;
 });
 
-// redraw all lines whenever the canvas is marked "dirty"
 canvas.addEventListener("dirty", () => {
   if (!ctx) return;
   ctx.clearRect(0, 0, canvas.width, canvas.height);
+
   for (const cmd of displayList) {
-    cmd.display(ctx); // each command draws itself
+    cmd.display(ctx);
+  }
+
+  if (currentPreview) {
+    currentPreview.display(ctx);
+  }
+});
+
+// redraw all lines whenever the canvas is marked "dirty"
+canvas.addEventListener("dirty", () => {
+  if (!ctx) return;
+
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+  // draw all lines
+  for (const cmd of displayList) {
+    cmd.display(ctx);
+  }
+
+  // draw the preview if it exists
+  if (currentPreview) {
+    currentPreview.display(ctx);
   }
 });
 
@@ -165,7 +193,7 @@ clearButton.addEventListener("click", () => {
 undoButton.addEventListener("click", () => {
   if (displayList.length === 0) return;
   const cmd = displayList.pop();
-  if (cmd) redoList.push(cmd); // add to redo stack
+  if (cmd) redoList.push(cmd);
   canvas.dispatchEvent(new Event("dirty"));
 });
 
@@ -178,14 +206,27 @@ redoButton.addEventListener("click", () => {
 });
 
 // thickness
-thinButton.addEventListener("click", () => {
-  currentThickness = 2;
-  thinButton.classList.add("selectedTool");
-  thickButton.classList.remove("selectedTool");
-});
+function selectTool(
+  thickness: number,
+  selectedButton: HTMLButtonElement,
+  otherButton: HTMLButtonElement,
+) {
+  currentThickness = thickness;
+  selectedButton.classList.add("selectedTool");
+  otherButton.classList.remove("selectedTool");
 
-thickButton.addEventListener("click", () => {
-  currentThickness = 6;
-  thickButton.classList.add("selectedTool");
-  thinButton.classList.remove("selectedTool");
-});
+  // update preview immediately if it exists
+  if (currentPreview) {
+    currentPreview.thickness = currentThickness;
+    canvas.dispatchEvent(new Event("dirty"));
+  }
+}
+
+thinButton.addEventListener(
+  "click",
+  () => selectTool(2, thinButton, thickButton),
+);
+thickButton.addEventListener(
+  "click",
+  () => selectTool(6, thickButton, thinButton),
+);
