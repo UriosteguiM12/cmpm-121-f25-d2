@@ -29,6 +29,15 @@ thinButton.textContent = "thin";
 const thickButton = document.createElement("button");
 thickButton.textContent = "thick";
 
+const pizzaButton = document.createElement("button");
+pizzaButton.textContent = "🍕";
+
+const catButton = document.createElement("button");
+catButton.textContent = "🐱";
+
+const cactusButton = document.createElement("button");
+cactusButton.textContent = "🌵";
+
 // Centering
 const buttonContainer = document.createElement("div");
 buttonContainer.className = "button-container";
@@ -37,10 +46,14 @@ buttonContainer.appendChild(undoButton);
 buttonContainer.appendChild(redoButton);
 buttonContainer.appendChild(thinButton);
 buttonContainer.appendChild(thickButton);
+buttonContainer.appendChild(pizzaButton);
+buttonContainer.appendChild(catButton);
+buttonContainer.appendChild(cactusButton);
 
 document.body.appendChild(buttonContainer);
 
 let currentThickness = 2;
+const _currentSticker: string | null = null;
 
 // create a custom type for the arrays
 interface Point {
