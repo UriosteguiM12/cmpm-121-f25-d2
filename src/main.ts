@@ -43,73 +43,95 @@ interface Drawable {
   display(ctx: CanvasRenderingContext2D): void;
 }
 
-// Arrays to store points
-const drawingPoints: Point[][] = [];
-let currentDisplay: Point[] = [];
-const redoPoints: Point[][] = [];
+// create a command class
 
-// Draw
+// LineCommand stores all points in a single line and can draw itself
+class LineCommand implements Drawable {
+  private points: Point[] = [];
+
+  // start a new line at the given point
+  constructor(start: Point) {
+    this.points.push(start);
+  }
+
+  // add a new point to the line as the user drags
+  drag(x: number, y: number) {
+    this.points.push({ x, y });
+  }
+
+  // draw the line on the canvas
+  display(ctx: CanvasRenderingContext2D) {
+    if (this.points.length < 2) return; // nothing exists to draw
+    ctx.beginPath();
+    ctx.moveTo(this.points[0].x, this.points[0].y);
+    for (const pt of this.points.slice(1)) {
+      ctx.lineTo(pt.x, pt.y);
+    }
+    ctx.stroke();
+  }
+}
+
+// display list stores all current lines
+const displayList: Drawable[] = [];
+// redo list stores lines that were undone
+const redoList: Drawable[] = [];
+// currentLine is the line being actively drawn (null if not drawing)
+let currentLine: LineCommand | null = null;
+
 const cursor = { active: false, x: 0, y: 0 };
 
-// Create a new path
+
+// start a new line on mouse down
 canvas.addEventListener("mousedown", (e) => {
   cursor.active = true;
-  currentDisplay = [{ x: e.offsetX, y: e.offsetY }];
-  drawingPoints.push(currentDisplay);
-  redoPoints.length = 0; // clear redoPoints when starting a new path
+  const start: Point = { x: e.offsetX, y: e.offsetY };
+  currentLine = new LineCommand(start);
+  displayList.push(currentLine); // add to display list
+  redoList.length = 0; // clear redo history
 });
 
-// Add points to the current display
+// extend the current line as the mouse moves
 canvas.addEventListener("mousemove", (e) => {
-  if (!cursor.active) return;
-  currentDisplay.push({ x: e.offsetX, y: e.offsetY });
-  canvas.dispatchEvent(new Event("dirty"));
+  if (!cursor.active || !currentLine) return;
+  currentLine.drag(e.offsetX, e.offsetY);
+  canvas.dispatchEvent(new Event("dirty")); // trigger redraw
 });
 
-// Drawing has stopped
+// stop drawing when mouse is released
 canvas.addEventListener("mouseup", () => {
   cursor.active = false;
+  currentLine = null;
 });
 
-// Redraw the canvas if made dirty
+// redraw all lines whenever the canvas is marked "dirty"
 canvas.addEventListener("dirty", () => {
   if (!ctx) return;
   ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-  ctx.beginPath();
-  for (const path of drawingPoints) {
-    for (let i = 1; i < path.length; i++) {
-      const prev = path[i - 1];
-      const curr = path[i];
-      ctx.moveTo(prev.x, prev.y);
-      ctx.lineTo(curr.x, curr.y);
-    }
+  for (const cmd of displayList) {
+    cmd.display(ctx); // each command draws itself
   }
-  ctx.stroke();
 });
 
-// Click Logic
+// click logic
+
+// CLEAR
 clearButton.addEventListener("click", () => {
-  drawingPoints.length = 0;
-  if (ctx) {
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-  }
+  displayList.length = 0;
+  ctx?.clearRect(0, 0, canvas.width, canvas.height);
 });
 
+// UNDO
 undoButton.addEventListener("click", () => {
-  if (drawingPoints.length === 0) return;
-
-  const newPoints = drawingPoints.pop();
-  if (newPoints) redoPoints.push(newPoints);
-
+  if (displayList.length === 0) return;
+  const cmd = displayList.pop();
+  if (cmd) redoList.push(cmd); // add to redo stack
   canvas.dispatchEvent(new Event("dirty"));
 });
 
+// REDO
 redoButton.addEventListener("click", () => {
-  if (redoPoints.length === 0) return;
-
-  const oldPoints = redoPoints.pop();
-  if (oldPoints) drawingPoints.push(oldPoints);
-
+  if (redoList.length === 0) return;
+  const cmd = redoList.pop();
+  if (cmd) displayList.push(cmd);
   canvas.dispatchEvent(new Event("dirty"));
 });
