@@ -41,19 +41,21 @@ cactusButton.textContent = "🌵";
 // Centering
 const buttonContainer = document.createElement("div");
 buttonContainer.className = "button-container";
-buttonContainer.appendChild(clearButton);
-buttonContainer.appendChild(undoButton);
-buttonContainer.appendChild(redoButton);
-buttonContainer.appendChild(thinButton);
-buttonContainer.appendChild(thickButton);
-buttonContainer.appendChild(pizzaButton);
-buttonContainer.appendChild(catButton);
-buttonContainer.appendChild(cactusButton);
-
+buttonContainer.append(
+  clearButton,
+  undoButton,
+  redoButton,
+  thinButton,
+  thickButton,
+  pizzaButton,
+  catButton,
+  cactusButton,
+);
 document.body.appendChild(buttonContainer);
 
+let currentTool: "marker" | "sticker" = "marker";
 let currentThickness = 2;
-const _currentSticker: string | null = null;
+let currentSticker: string | null = null;
 
 // create a custom type for the arrays
 interface Point {
@@ -97,26 +99,53 @@ class LineCommand implements Drawable {
   }
 }
 
+class StickerCommand implements Drawable {
+  x: number;
+  y: number;
+  emoji: string | undefined;
+
+  constructor(x: number, y: number, emoji: string) {
+    this.x = x;
+    this.y = y;
+    this.emoji = emoji;
+  }
+
+  drag(x: number, y: number) {
+    this.x = x;
+    this.y = y;
+  }
+
+  display(ctx: CanvasRenderingContext2D) {
+    ctx.font = "24px sans-serif";
+    ctx.fillText(this.emoji ?? "", this.x, this.y);
+  }
+}
+
 class ToolPreview implements Drawable {
   x: number;
   y: number;
   thickness: number;
+  emoji?: string | undefined;
 
-  constructor(x: number, y: number, thickness: number) {
+  constructor(x: number, y: number, thickness: number, emoji?: string) {
     this.x = x;
     this.y = y;
     this.thickness = thickness;
-  }
-
-  draw(ctx: CanvasRenderingContext2D) {
-    ctx.beginPath();
-    ctx.arc(this.x, this.y, this.thickness / 2, 0, Math.PI * 2);
-    ctx.strokeStyle = "gray";
-    ctx.stroke();
+    this.emoji = emoji;
   }
 
   display(ctx: CanvasRenderingContext2D) {
-    this.draw(ctx);
+    ctx.save();
+    if (this.emoji) {
+      ctx.font = "24px sans-serif";
+      ctx.fillText(this.emoji, this.x, this.y);
+    } else {
+      ctx.beginPath();
+      ctx.arc(this.x, this.y, this.thickness / 2, 0, Math.PI * 2);
+      ctx.strokeStyle = "gray";
+      ctx.stroke();
+    }
+    ctx.restore();
   }
 }
 
@@ -134,47 +163,50 @@ const cursor = { active: false, x: 0, y: 0 };
 // start a new line on mouse down
 canvas.addEventListener("mousedown", (e) => {
   cursor.active = true;
-  currentPreview = null; // hide preview while drawing
+  currentPreview = null;
 
-  const start: Point = { x: e.offsetX, y: e.offsetY };
-  currentLine = new LineCommand(start, currentThickness);
-  displayList.push(currentLine);
+  const x = e.offsetX;
+  const y = e.offsetY;
+
+  if (currentTool === "marker") {
+    currentLine = new LineCommand({ x, y }, currentThickness);
+    displayList.push(currentLine);
+  } else if (currentTool === "sticker" && currentSticker) {
+    const sticker = new StickerCommand(x, y, currentSticker);
+    displayList.push(sticker);
+  }
+
   redoList.length = 0;
 });
 
 canvas.addEventListener("mousemove", (e) => {
-  if (cursor.active && currentLine) {
+  if (cursor.active && currentTool === "marker" && currentLine) {
     currentLine.drag(e.offsetX, e.offsetY);
   } else {
-    // update preview
-    currentPreview = new ToolPreview(e.offsetX, e.offsetY, currentThickness);
+    currentPreview = new ToolPreview(
+      e.offsetX,
+      e.offsetY,
+      currentThickness,
+      currentTool === "sticker" ? currentSticker ?? undefined : undefined,
+    );
 
-    // fire tool-moved event
     const toolMovedEvent = new CustomEvent("tool-moved", {
-      detail: { x: e.offsetX, y: e.offsetY, thickness: currentThickness },
+      detail: {
+        x: e.offsetX,
+        y: e.offsetY,
+        tool: currentTool,
+        emoji: currentSticker,
+      },
     });
     canvas.dispatchEvent(toolMovedEvent);
   }
 
-  canvas.dispatchEvent(new Event("dirty")); // redraw
+  canvas.dispatchEvent(new Event("dirty"));
 });
 
 canvas.addEventListener("mouseup", () => {
   cursor.active = false;
   currentLine = null;
-});
-
-canvas.addEventListener("dirty", () => {
-  if (!ctx) return;
-  ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-  for (const cmd of displayList) {
-    cmd.display(ctx);
-  }
-
-  if (currentPreview) {
-    currentPreview.display(ctx);
-  }
 });
 
 // redraw all lines whenever the canvas is marked "dirty"
@@ -218,12 +250,28 @@ redoButton.addEventListener("click", () => {
   canvas.dispatchEvent(new Event("dirty"));
 });
 
+thinButton.addEventListener(
+  "click",
+  () => selectTool(2, thinButton, thickButton),
+);
+thickButton.addEventListener(
+  "click",
+  () => selectTool(6, thickButton, thinButton),
+);
+
+// STICKERS
+pizzaButton.addEventListener("click", () => selectSticker("🍕", pizzaButton));
+catButton.addEventListener("click", () => selectSticker("🐱", catButton));
+cactusButton.addEventListener("click", () => selectSticker("🌵", cactusButton));
+
 // thickness
 function selectTool(
   thickness: number,
   selectedButton: HTMLButtonElement,
   otherButton: HTMLButtonElement,
 ) {
+  currentTool = "marker";
+  currentSticker = null;
   currentThickness = thickness;
   selectedButton.classList.add("selectedTool");
   otherButton.classList.remove("selectedTool");
@@ -235,11 +283,19 @@ function selectTool(
   }
 }
 
-thinButton.addEventListener(
-  "click",
-  () => selectTool(2, thinButton, thickButton),
-);
-thickButton.addEventListener(
-  "click",
-  () => selectTool(6, thickButton, thinButton),
-);
+function selectSticker(emoji: string, button: HTMLButtonElement) {
+  currentTool = "sticker";
+  currentSticker = emoji;
+
+  // update button styles
+  document.querySelectorAll("button").forEach((btn) =>
+    btn.classList.remove("selectedTool")
+  );
+  button.classList.add("selectedTool");
+
+  // fire tool-moved immediately on button click
+  const toolMovedEvent = new CustomEvent("tool-moved", {
+    detail: { tool: "sticker", emoji },
+  });
+  canvas.dispatchEvent(toolMovedEvent);
+}
