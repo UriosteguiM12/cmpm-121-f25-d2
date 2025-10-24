@@ -40,7 +40,7 @@ buttonContainer.appendChild(thickButton);
 
 document.body.appendChild(buttonContainer);
 
-let _currentThickness = 2;
+let currentThickness = 2;
 
 // create a custom type for the arrays
 interface Point {
@@ -58,10 +58,12 @@ interface Drawable {
 // LineCommand stores all points in a single line and can draw itself
 class LineCommand implements Drawable {
   private points: Point[] = [];
+  private thickness: number;
 
   // start a new line at the given point
-  constructor(start: Point) {
+  constructor(start: Point, thickness: number) {
     this.points.push(start);
+    this.thickness = thickness;
   }
 
   // add a new point to the line as the user drags
@@ -73,6 +75,7 @@ class LineCommand implements Drawable {
   display(ctx: CanvasRenderingContext2D) {
     if (this.points.length < 2) return; // nothing exists to draw
     ctx.beginPath();
+    ctx.lineWidth = this.thickness;
     ctx.moveTo(this.points[0].x, this.points[0].y);
     for (const pt of this.points.slice(1)) {
       ctx.lineTo(pt.x, pt.y);
@@ -94,7 +97,7 @@ const cursor = { active: false, x: 0, y: 0 };
 canvas.addEventListener("mousedown", (e) => {
   cursor.active = true;
   const start: Point = { x: e.offsetX, y: e.offsetY };
-  currentLine = new LineCommand(start);
+  currentLine = new LineCommand(start, currentThickness);
   displayList.push(currentLine); // add to display list
   redoList.length = 0; // clear redo history
 });
@@ -147,13 +150,13 @@ redoButton.addEventListener("click", () => {
 
 // thickness
 thinButton.addEventListener("click", () => {
-  _currentThickness = 2;
+  currentThickness = 2;
   thinButton.classList.add("selectedTool");
   thickButton.classList.remove("selectedTool");
 });
 
 thickButton.addEventListener("click", () => {
-  _currentThickness = 6;
+  currentThickness = 6;
   thickButton.classList.add("selectedTool");
   thinButton.classList.remove("selectedTool");
 });
