@@ -337,4 +337,15 @@ exportButton.addEventListener("click", () => {
   // Scale the context so the drawing fits 4x larger
   const scaleFactor = 4;
   exportCtx.scale(scaleFactor, scaleFactor);
+
+  // Redraw all items from displayList (but not previews)
+  for (const cmd of displayList) {
+    cmd.display(exportCtx);
+  }
+
+  // Convert to PNG and trigger download
+  const anchor = document.createElement("a");
+  anchor.href = exportCanvas.toDataURL("image/png");
+  anchor.download = "canvas_export.png";
+  anchor.click();
 });
