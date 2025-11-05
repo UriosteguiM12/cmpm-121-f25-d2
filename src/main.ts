@@ -177,10 +177,15 @@ class ToolPreview implements Drawable {
       ctx.font = "24px sans-serif";
       ctx.fillText(this.emoji, this.x, this.y);
     } else {
+      const previewRadius = this.thickness / 2 * 1.5;
       ctx.beginPath();
-      ctx.arc(this.x, this.y, this.thickness / 2, 0, Math.PI * 2);
+      ctx.arc(this.x, this.y, previewRadius, 0, Math.PI * 2);
       ctx.strokeStyle = "gray";
       ctx.stroke();
+
+      // show the current color fill
+      ctx.fillStyle = currentColor;
+      ctx.fill();
     }
     ctx.restore();
   }
@@ -289,7 +294,7 @@ redoButton.addEventListener("click", () => {
 
 thinButton.addEventListener(
   "click",
-  () => selectTool(2, thinButton, thickButton),
+  () => selectTool(4, thinButton, thickButton),
 );
 thickButton.addEventListener(
   "click",
