@@ -80,7 +80,7 @@ buttonContainer.append(
   thickButton,
   ...stickerButtons,
   customStickerButton,
-  exportButton
+  exportButton,
 );
 document.body.appendChild(buttonContainer);
 
