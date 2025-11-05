@@ -13,6 +13,9 @@ canvas.id = "game-canvas";
 const ctx = canvas.getContext("2d");
 document.body.appendChild(canvas);
 
+// Brush color
+let _currentColor = "#000000";
+
 //Sticker set
 const stickers = [
   { emoji: "🍕" },
@@ -325,6 +328,17 @@ function selectSticker(emoji: string, button: HTMLButtonElement) {
   });
   canvas.dispatchEvent(toolMovedEvent);
 }
+
+function getRandomColor(): string {
+  const letters = "0123456789ABCDEF";
+  let color = "#";
+  for (let i = 0; i < 6; i++) {
+    color += letters[Math.floor(Math.random() * 16)];
+  }
+  return color;
+}
+
+_currentColor = getRandomColor();
 
 exportButton.addEventListener("click", () => {
   // Create a temporary high-resolution canvas
