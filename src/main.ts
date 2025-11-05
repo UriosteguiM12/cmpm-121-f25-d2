@@ -45,6 +45,27 @@ for (const sticker of stickers) {
   stickerButtons.push(btn);
 }
 
+// Allow the user to add a custom sticker
+const customStickerButton = document.createElement("button");
+customStickerButton.textContent = "➕ Custom";
+
+customStickerButton.addEventListener("click", () => {
+  const newEmoji = prompt("Custom sticker text", "🧽");
+  if (newEmoji && newEmoji.trim() !== "") {
+    const newSticker = { emoji: newEmoji.trim() };
+    stickers.push(newSticker);
+
+    // Create a new button for this sticker
+    const btn = document.createElement("button");
+    btn.textContent = newSticker.emoji;
+    btn.addEventListener("click", () => selectSticker(newSticker.emoji, btn));
+
+    // Add to DOM
+    buttonContainer.appendChild(btn);
+    stickerButtons.push(btn);
+  }
+});
+
 // Centering
 const buttonContainer = document.createElement("div");
 buttonContainer.className = "button-container";
@@ -55,6 +76,7 @@ buttonContainer.append(
   thinButton,
   thickButton,
   ...stickerButtons,
+  customStickerButton,
 );
 document.body.appendChild(buttonContainer);
 
