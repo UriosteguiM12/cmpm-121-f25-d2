@@ -84,8 +84,8 @@ buttonContainer.append(
 );
 document.body.appendChild(buttonContainer);
 
-let currentTool: "marker" | "sticker" = "marker";
-let currentThickness = 2;
+let currentTool: "brush" | "sticker" = "brush";
+let currentThickness = 3;
 let currentSticker: string | null = null;
 
 // create a custom type for the arrays
@@ -199,7 +199,7 @@ canvas.addEventListener("mousedown", (e) => {
   const x = e.offsetX;
   const y = e.offsetY;
 
-  if (currentTool === "marker") {
+  if (currentTool === "brush") {
     currentLine = new LineCommand({ x, y }, currentThickness);
     displayList.push(currentLine);
   } else if (currentTool === "sticker" && currentSticker) {
@@ -211,7 +211,7 @@ canvas.addEventListener("mousedown", (e) => {
 });
 
 canvas.addEventListener("mousemove", (e) => {
-  if (cursor.active && currentTool === "marker" && currentLine) {
+  if (cursor.active && currentTool === "brush" && currentLine) {
     currentLine.drag(e.offsetX, e.offsetY);
   } else {
     currentPreview = new ToolPreview(
@@ -296,7 +296,7 @@ function selectTool(
   selectedButton: HTMLButtonElement,
   otherButton: HTMLButtonElement,
 ) {
-  currentTool = "marker";
+  currentTool = "brush";
   currentSticker = null;
   currentThickness = thickness;
   selectedButton.classList.add("selectedTool");
