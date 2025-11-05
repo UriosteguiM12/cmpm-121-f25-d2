@@ -305,6 +305,10 @@ function selectTool(
   currentTool = "brush";
   currentSticker = null;
   currentThickness = thickness;
+
+  // pick a new random color for the next stroke
+  currentColor = getRandomColor();
+
   selectedButton.classList.add("selectedTool");
   otherButton.classList.remove("selectedTool");
 
@@ -318,6 +322,9 @@ function selectTool(
 function selectSticker(emoji: string, button: HTMLButtonElement) {
   currentTool = "sticker";
   currentSticker = emoji;
+
+  // pick a new random color for brush strokes next time
+  currentColor = getRandomColor();
 
   // update button styles
   document.querySelectorAll("button").forEach((btn) =>
