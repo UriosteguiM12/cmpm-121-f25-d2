@@ -14,7 +14,7 @@ const ctx = canvas.getContext("2d");
 document.body.appendChild(canvas);
 
 // Brush color
-let _currentColor = "#000000";
+let currentColor = "#000000";
 
 //Sticker set
 const stickers = [
@@ -108,11 +108,13 @@ interface Drawable {
 class LineCommand implements Drawable {
   private points: Point[] = [];
   private thickness: number;
+  private color: string;
 
   // start a new line at the given point
-  constructor(start: Point, thickness: number) {
+  constructor(start: Point, thickness: number, color: string) {
     this.points.push(start);
     this.thickness = thickness;
+    this.color = color;
   }
 
   // add a new point to the line as the user drags
@@ -122,9 +124,10 @@ class LineCommand implements Drawable {
 
   // draw the line on the canvas
   display(ctx: CanvasRenderingContext2D) {
-    if (this.points.length < 2) return; // nothing exists to draw
+    if (this.points.length < 2) return;
     ctx.beginPath();
     ctx.lineWidth = this.thickness;
+    ctx.strokeStyle = this.color;
     ctx.moveTo(this.points[0].x, this.points[0].y);
     for (const pt of this.points.slice(1)) {
       ctx.lineTo(pt.x, pt.y);
@@ -203,7 +206,7 @@ canvas.addEventListener("mousedown", (e) => {
   const y = e.offsetY;
 
   if (currentTool === "brush") {
-    currentLine = new LineCommand({ x, y }, currentThickness);
+    currentLine = new LineCommand({ x, y }, currentThickness, currentColor);
     displayList.push(currentLine);
   } else if (currentTool === "sticker" && currentSticker) {
     const sticker = new StickerCommand(x, y, currentSticker);
@@ -338,7 +341,7 @@ function getRandomColor(): string {
   return color;
 }
 
-_currentColor = getRandomColor();
+currentColor = getRandomColor();
 
 exportButton.addEventListener("click", () => {
   // Create a temporary high-resolution canvas
