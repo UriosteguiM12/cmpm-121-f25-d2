@@ -30,6 +30,9 @@ undoButton.innerHTML = "undo";
 const redoButton = document.createElement("button");
 redoButton.innerHTML = "redo";
 
+const exportButton = document.createElement("button");
+exportButton.textContent = "export";
+
 const thinButton = document.createElement("button");
 thinButton.textContent = "thin";
 
@@ -77,6 +80,7 @@ buttonContainer.append(
   thickButton,
   ...stickerButtons,
   customStickerButton,
+  exportButton
 );
 document.body.appendChild(buttonContainer);
 
