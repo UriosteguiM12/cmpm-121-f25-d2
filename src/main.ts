@@ -325,3 +325,16 @@ function selectSticker(emoji: string, button: HTMLButtonElement) {
   });
   canvas.dispatchEvent(toolMovedEvent);
 }
+
+exportButton.addEventListener("click", () => {
+  // Create a temporary high-resolution canvas
+  const exportCanvas = document.createElement("canvas");
+  exportCanvas.width = 1024;
+  exportCanvas.height = 1024;
+  const exportCtx = exportCanvas.getContext("2d");
+  if (!exportCtx) return;
+
+  // Scale the context so the drawing fits 4x larger
+  const scaleFactor = 4;
+  exportCtx.scale(scaleFactor, scaleFactor);
+});
