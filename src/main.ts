@@ -13,6 +13,13 @@ canvas.id = "game-canvas";
 const ctx = canvas.getContext("2d");
 document.body.appendChild(canvas);
 
+//Sticker set
+const stickers = [
+  { emoji: "🍕" },
+  { emoji: "🐱" },
+  { emoji: "🌵" },
+];
+
 // Creating the buttons
 const clearButton = document.createElement("button");
 clearButton.innerHTML = "clear";
@@ -29,14 +36,14 @@ thinButton.textContent = "thin";
 const thickButton = document.createElement("button");
 thickButton.textContent = "thick";
 
-const pizzaButton = document.createElement("button");
-pizzaButton.textContent = "🍕";
-
-const catButton = document.createElement("button");
-catButton.textContent = "🐱";
-
-const cactusButton = document.createElement("button");
-cactusButton.textContent = "🌵";
+// Creating the sticker buttons dynamically instead of hard coding them
+const stickerButtons: HTMLButtonElement[] = [];
+for (const sticker of stickers) {
+  const btn = document.createElement("button");
+  btn.textContent = sticker.emoji;
+  btn.addEventListener("click", () => selectSticker(sticker.emoji, btn));
+  stickerButtons.push(btn);
+}
 
 // Centering
 const buttonContainer = document.createElement("div");
@@ -47,9 +54,7 @@ buttonContainer.append(
   redoButton,
   thinButton,
   thickButton,
-  pizzaButton,
-  catButton,
-  cactusButton,
+  ...stickerButtons,
 );
 document.body.appendChild(buttonContainer);
 
@@ -258,11 +263,6 @@ thickButton.addEventListener(
   "click",
   () => selectTool(6, thickButton, thinButton),
 );
-
-// STICKERS
-pizzaButton.addEventListener("click", () => selectSticker("🍕", pizzaButton));
-catButton.addEventListener("click", () => selectSticker("🐱", catButton));
-cactusButton.addEventListener("click", () => selectSticker("🌵", cactusButton));
 
 // thickness
 function selectTool(
